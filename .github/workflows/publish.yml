@@ -1,0 +1,58 @@
+name: publish
+
+# Triggered by pushing a v* tag (e.g. v0.1.0), or manually via the Actions
+# UI / GitHub API by dispatching with a ref.
+#
+# Auth: npm Trusted Publishing (OIDC) once configured at npmjs.com. Until
+# then, the first publish needs an NPM_TOKEN repo secret. After the package
+# exists, configure Trusted Publishing at:
+#   https://www.npmjs.com/package/kxco-verify/access  →  Trusted Publishers
+# Binding to: org=JackKXCO, repo=kxco-verify, workflow file=publish.yml
+# Then delete the NPM_TOKEN secret.
+#
+# All third-party actions pinned by 40-char commit SHA.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Tag or ref to publish (e.g. v0.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write   # required for npm provenance (and Trusted Publishing)
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
+
+      - name: Setup Node 20 with npm registry
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Publish (provenance via OIDC; uses Trusted Publishing once configured)
+        run: npm publish --provenance --access public
+        env:
+          # Only needed for the first publish (before Trusted Publishing is
+          # configured on the npm side). Safe to leave the line — npm CLI
+          # ignores the env var when OIDC succeeds.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
