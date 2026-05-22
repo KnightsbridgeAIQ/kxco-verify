@@ -1,0 +1,72 @@
+{
+  "name": "kxco-verify",
+  "version": "0.1.0",
+  "description": "Independent, browser-safe verifier for KXCO post-quantum signed deploy attestations. Verifies ML-DSA-65 (NIST FIPS 204) signatures emitted by sites that use kxco-post-quantum. No trust delegation: this library tells you whether the signature math checks out and whether the manifest-declared key matches the live well-known endpoint — it does NOT vouch for any site.",
+  "keywords": [
+    "post-quantum",
+    "pqc",
+    "ml-dsa",
+    "dilithium",
+    "nist",
+    "fips-204",
+    "verification",
+    "attestation",
+    "verify",
+    "kxco-post-quantum"
+  ],
+  "license": "Apache-2.0",
+  "author": "KXCO by Knightsbridge <hello@kxco.ai>",
+  "homepage": "https://verify.kxco.ai",
+  "funding": "https://kxco.ai",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JackKXCO/kxco-verify.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JackKXCO/kxco-verify/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types":  "./src/index.d.ts",
+      "import": "./src/index.js"
+    },
+    "./parse": {
+      "types":  "./src/parse.d.ts",
+      "import": "./src/parse.js"
+    },
+    "./verify": {
+      "types":  "./src/verify.d.ts",
+      "import": "./src/verify.js"
+    },
+    "./fetch": {
+      "types":  "./src/fetch.d.ts",
+      "import": "./src/fetch.js"
+    }
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@noble/post-quantum": "^0.2.1"
+  },
+  "scripts": {
+    "test":       "node --test --test-reporter=spec test/parse.test.js test/verify.test.js test/fetch.test.js test/index.test.js",
+    "test:cov":   "node --test --experimental-test-coverage test/parse.test.js test/verify.test.js test/fetch.test.js test/index.test.js",
+    "smoke":      "node scripts/smoke.js",
+    "lint":       "node -c src/index.js && node -c src/parse.js && node -c src/verify.js && node -c src/fetch.js"
+  },
+  "publishConfig": {
+    "provenance": true,
+    "access": "public"
+  }
+}
