@@ -1,6 +1,6 @@
 {
   "name": "kxco-verify",
-  "version": "0.1.3",
+  "version": "1.0.0",
   "description": "Independent, browser-safe verifier for KXCO post-quantum signed deploy attestations. Verifies ML-DSA-65 (NIST FIPS 204) signatures emitted by sites that use kxco-post-quantum. No trust delegation: this library tells you whether the signature math checks out and whether the manifest-declared key matches the live well-known endpoint \u00e2\u20ac\u201d it does NOT vouch for any site.",
   "keywords": [
     "post-quantum",
