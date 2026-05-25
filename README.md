@@ -1,7 +1,9 @@
 # kxco-verify
 
 [![npm](https://img.shields.io/npm/v/kxco-verify?label=npm&color=b0964f)](https://www.npmjs.com/package/kxco-verify)
+[![Socket](https://socket.dev/api/badge/npm/package/kxco-verify)](https://socket.dev/npm/package/kxco-verify)
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue)](./LICENSE)
+[![node](https://img.shields.io/node/v/kxco-verify.svg)](https://nodejs.org)
 [![verify.kxco.ai](https://img.shields.io/badge/verify.kxco.ai-live-22c55e)](https://verify.kxco.ai)
 
 **Independent, browser-safe verifier for post-quantum signed deploy attestations** produced by sites using [`kxco-post-quantum`](https://www.npmjs.com/package/kxco-post-quantum).
@@ -146,6 +148,18 @@ The test suite verifies the math against both.
 - **Reproducible builds + SLSA provenance.** Every published version of this package carries an npm provenance attestation showing the exact commit and GitHub Actions workflow that produced it. Verify with `npm view kxco-verify --json | jq .dist.attestations`.
 
 ---
+
+## Security
+
+Signature verification uses [`@noble/post-quantum`](https://github.com/paulmillr/noble-post-quantum) ML-DSA-65 — independently audited by Cure53 (2024), no transitive dependencies. The library makes no outbound requests beyond the attestation URL you supply and the `pinAt` endpoint declared in the manifest itself. No data is sent to KXCO.
+
+To report a vulnerability, open a [private security advisory](https://github.com/JackKXCO/kxco-verify/security/advisories/new) or email **security@kxco.ai**.
+
+## Funding
+
+Maintained by **Shayne Heffernan** and **John Heffernan** at [KXCO by Knightsbridge](https://kxco.ai).
+
+[Knightsbridge Law](https://knightsbridge.law) · [target150.com](https://target150.com) · [livetradingnews.com](https://livetradingnews.com)
 
 ## License
 
