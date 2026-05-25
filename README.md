@@ -161,3 +161,9 @@ This library is deliberately permissively licensed and architecturally independe
 - [`verify.kxco.ai`](https://verify.kxco.ai) — public web verifier (runs this library client-side)
 - [`docs/verification.md`](./docs/verification.md) — full end-to-end verification flow
 - [`docs/threat-model.md`](./docs/threat-model.md) — what this library does and does not protect against
+
+## Maintainers
+
+Shayne Heffernan · John Heffernan — [KXCO by Knightsbridge](https://kxco.ai)
+
+Deployed in production at [target150.com](https://target150.com), [knightsbridgelaw.com](https://knightsbridgelaw.com), [livetradingnews.com](https://livetradingnews.com).
