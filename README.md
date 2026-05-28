@@ -6,11 +6,23 @@
 [![node](https://img.shields.io/node/v/kxco-verify.svg)](https://nodejs.org)
 [![verify.kxco.ai](https://img.shields.io/badge/verify.kxco.ai-live-22c55e)](https://verify.kxco.ai)
 
-**Independent, browser-safe verifier for post-quantum signed deploy attestations** produced by sites using [`kxco-post-quantum`](https://www.npmjs.com/package/kxco-post-quantum).
+Standalone post-quantum credential and attestation verifier for KXCO ML-DSA-65 signed documents. Zero heavy dependencies. Works in any modern browser and Node 18+.
 
-Zero runtime dependencies beyond [`@noble/post-quantum`](https://github.com/paulmillr/noble-post-quantum). Apache 2.0. Works the same in Node 18+ and in any modern browser — the library never imports anything Node-specific. The public [`verify.kxco.ai`](https://verify.kxco.ai) web app runs this exact library entirely client-side; nothing is sent to a KXCO server.
+---
 
-> **Read this before you use the result.** A `"valid"` result means the signature math checks out against the public key the site itself declared, AND that key currently matches the live well-known endpoint. **It does not mean KXCO has vetted the site, its operator, or its content.** A self-signed attestation from a brand-new domain looks the same as one from a real institution — that's the point of cryptography, not a bug in the verifier. See [`docs/threat-model.md`](./docs/threat-model.md) for what is and isn't proven.
+## When to use this
+
+This package is for the **receiving end** of a KXCO signed attestation — anyone who needs to confirm that a signature is genuine without being a KXCO institution or running the full SDK.
+
+Use this if you are:
+
+- A regulator or auditor who received a signed document and needs to confirm it cryptographically
+- A counterparty checking that an institution's attestation is valid before acting on it
+- Building a browser-based verification UI (the public [verify.kxco.ai](https://verify.kxco.ai) runs this library entirely client-side)
+- Writing a minimal verification script with no heavy dependencies
+- An end user who wants to verify a credential independently, without trusting any intermediary server
+
+If you need to **sign** attestations, see the packages listed under [Part of the KXCO stack](#part-of-the-kxco-stack).
 
 ---
 
@@ -20,74 +32,156 @@ Zero runtime dependencies beyond [`@noble/post-quantum`](https://github.com/paul
 npm install kxco-verify
 ```
 
-Node ≥18. ESM only.
+Node 18+. ESM only.
+
+---
 
 ## Quick start
-
-### Verify a URL
 
 ```js
 import { verifyUrl } from 'kxco-verify'
 
-const r = await verifyUrl('https://www.target150.com/api/attestation')
+const result = await verifyUrl('https://www.target150.com/api/attestation')
 
-console.log(r.state)         // 'valid' | 'rotated' | 'invalid' | 'error'
-console.log(r.algorithm)     // 'ML-DSA-65'
-console.log(r.manifestKid)   // '680f9af0bb44de3f'
-console.log(r.deployment)    // { git_commit: '...', env: 'production', ... }
+console.log(result.state)         // 'valid' | 'rotated' | 'invalid' | 'error'
+console.log(result.algorithm)     // 'ML-DSA-65'
+console.log(result.manifestKid)   // '680f9af0bb44de3f'
+console.log(result.site)          // 'target150.com'
+console.log(result.deployment)    // { git_commit: '...', env: 'production', ... }
+console.log(result.verifiedAtMs)  // timestamp (Date.now()) when verification completed
 ```
 
-### Verify a manifest you already have
+If you already have the manifest body in hand (from a prior fetch, a file, or user paste):
 
 ```js
 import { verifyManifest } from 'kxco-verify'
 
-const body = await fetch('https://www.target150.com/api/attestation').then(r => r.text())
-const r    = await verifyManifest(body)
+const body = await fetch('https://example.com/api/attestation').then(r => r.text())
+const result = await verifyManifest(body)
 ```
 
-### CLI smoke against the production endpoints
+### Result states
 
-```bash
-npx kxco-verify-smoke
-# or, if cloned locally:
-npm run smoke
-```
+| `state` | Meaning |
+|---|---|
+| `"valid"` | Signature checks out against the manifest-declared key, and that key matches the live well-known endpoint. |
+| `"rotated"` | Signature checks out, but the live well-known endpoint now serves a different key. The site is mid key-rotation — retry shortly. |
+| `"invalid"` | The signature does not verify under the manifest-declared key, or the key identifier is inconsistent with the published key bytes. |
+| `"error"` | The verifier could not run: network failure, malformed JSON, or unsupported algorithm. |
+
+A `"valid"` result means the signature math checks out. It does not mean KXCO has vetted the site, its operator, or its content. See [`docs/threat-model.md`](./docs/threat-model.md).
 
 ---
 
-## The 3-state result
+## API
 
-This is the single most important thing to understand before consuming this library.
+All exports are re-exported from the main entry point (`import ... from 'kxco-verify'`). Lower-level helpers are also available from their sub-paths.
 
-| `state` | What it means | What it does not mean |
-|---|---|---|
-| `"valid"`   | Signature mathematically checks out against the manifest-declared key, AND that key matches the live `pinAt` well-known endpoint. | That the site is trustworthy, that KXCO endorses it, or that its content is what it claims to be. |
-| `"rotated"` | Signature checks out against the kid the manifest declared, but the well-known endpoint now serves a different kid. The site is mid key-rotation. Retry shortly. | That the site is compromised. |
-| `"invalid"` | The signature does NOT verify under the manifest's declared key, OR the kid does not match SHA-256 of the published pubkey bytes. | Necessarily that the site is malicious — could also be a misconfigured signer or tampering in flight. |
-| `"error"`   | The verifier could not run (network failure, malformed JSON, unsupported algorithm). | That the signature is invalid. |
+### `verifyUrl(attestationUrl, opts?) → Promise<VerifyResult>`
 
-The full shape returned by `verifyUrl` / `verifyManifest` is documented in [`src/index.d.ts`](./src/index.d.ts).
+Fetches the attestation at `attestationUrl`, verifies the ML-DSA-65 signature, then fetches the live well-known pubkey endpoint declared in the manifest (`publicKey.pinAt`) to detect key rotation. May return `"rotated"` if the live endpoint now serves a different key identifier.
 
----
+```ts
+verifyUrl(
+  attestationUrl: string,
+  opts?: {
+    timeoutMs?:      number           // default: no timeout
+    maxBytes?:       number           // max response size to accept
+    fetchImpl?:      typeof fetch     // override the fetch implementation
+    skipLivePubkey?: boolean          // skip rotation check (no live fetch)
+  }
+): Promise<VerifyResult>
+```
 
-## What the library does NOT do (yet)
+### `verifyManifest(manifestBody) → Promise<VerifyResult>`
 
-Tracked for later phases of [`kxco-post-quantum`](https://www.npmjs.com/package/kxco-post-quantum):
+Verify a manifest you already have. Accepts a raw JSON string or a parsed object. Does not make any network requests — so the result is `"valid"`, `"invalid"`, or `"error"` only, never `"rotated"`.
 
-- **No KXCO-controlled key registry.** There is no mapping from `domain → approved kid`. Anyone can generate an ML-DSA-65 keypair in 30 seconds and publish a self-signed manifest; this library will mark it `"valid"`. That is intentional for this release — verification is a math claim, not an endorsement. Future phases will add a registry; the verifier will then surface registry-status alongside the math result.
-- **No SLH-DSA-128s or hybrid envelopes.** ML-DSA-65 (NIST FIPS 204) only.
-- **No transparency log.** Whether a given attestation has been publicly seen before is not tracked here.
+```ts
+verifyManifest(manifestBody: string | object): Promise<VerifyResult>
+```
 
-If your threat model requires any of the above, do not call a `"valid"` result a "trust verdict" in your UI without your own additional checks.
+### `VerifyResult`
+
+```ts
+interface VerifyResult {
+  state:           'valid' | 'rotated' | 'invalid' | 'error'
+  algorithm?:      'ML-DSA-65'
+  manifestKid?:    string                    // key identifier declared in the manifest
+  livePubkeyKid?:  string                    // key identifier currently at the well-known endpoint
+  site?:           string                    // site identifier declared by the manifest
+  deployment?:     Record<string, unknown>   // opaque deployment metadata from the manifest
+  manifestRaw?:    Record<string, unknown>   // full parsed manifest JSON
+  error?:          VerifyResultError         // present when state is 'error', 'invalid', or 'rotated'
+  attestationUrl?: string
+  pubkeyUrl?:      string                    // well-known endpoint URL (when fetched)
+  verifiedAtMs?:   number                    // Date.now() when verification completed
+}
+
+interface VerifyResultError {
+  kind:     'parse' | 'fetch' | 'signature' | 'consistency' | 'rotation'
+  code:     string
+  message:  string
+  soft?:    boolean   // true when the math succeeded but a soft check failed
+}
+```
+
+### Low-level helpers
+
+These are exported for callers who want to compose their own verification logic.
+
+#### `parseManifest(input) → ParseResult`
+
+Parse and validate a raw manifest body without running signature verification.
+
+```ts
+parseManifest(input: string | object): ParseResult
+// ParseResult is { ok: true; manifest: ParsedManifest } | { ok: false; error: ParseError }
+```
+
+#### `verifySignature(publicKey, message, signature) → boolean`
+
+Run ML-DSA-65 signature verification directly.
+
+```ts
+verifySignature(
+  publicKey: Uint8Array | string,   // hex or bytes
+  message:   Uint8Array | string,   // UTF-8 string or bytes
+  signature: Uint8Array | string,   // hex or bytes
+): boolean
+```
+
+#### `computeKid(publicKey) → Promise<string>`
+
+Compute the KXCO key identifier: first 16 hex characters of SHA-256 of the raw public key bytes.
+
+```ts
+computeKid(publicKey: Uint8Array | string): Promise<string>
+```
+
+#### `getJsonBody(url, opts?) → Promise<FetchOk | FetchErr>`
+
+Fetch a URL with timeout and size limits, returning the raw body string.
+
+```ts
+getJsonBody(url: string, opts?: GetJsonBodyOpts): Promise<FetchOk | FetchErr>
+```
+
+#### Utility: `hexToBytes`, `bytesToHex`, `hexEquals`
+
+```ts
+hexToBytes(hex: string): Uint8Array
+bytesToHex(bytes: Uint8Array): string
+hexEquals(a: string, b: string): boolean
+```
 
 ---
 
 ## Browser usage
 
-The library is browser-safe by construction — no `Buffer`, no `node:crypto`, no `process`. SHA-256 is taken from `crypto.subtle` where available (every browser, Node 20+) and falls back to `node:crypto` on Node 18.
+The library is browser-safe by construction. It uses no `Buffer`, no `node:crypto`, and no `process`. SHA-256 is taken from `crypto.subtle` where available (every modern browser and Node 20+), with a `node:crypto` fallback on Node 18.
 
-Use a bundler (Vite, esbuild, Rollup, webpack) or load as ESM directly via an import map:
+Use a bundler (Vite, esbuild, Rollup, webpack), or load as ESM via an import map:
 
 ```html
 <script type="importmap">
@@ -100,84 +194,57 @@ Use a bundler (Vite, esbuild, Rollup, webpack) or load as ESM directly via an im
 </script>
 <script type="module">
   import { verifyUrl } from 'kxco-verify'
-  const r = await verifyUrl('https://example.com/api/attestation')
-  console.log(r.state)
+  const result = await verifyUrl('https://example.com/api/attestation')
+  console.log(result.state)
 </script>
 ```
 
-This is exactly what [`verify.kxco.ai`](https://verify.kxco.ai) does.
+This is how [verify.kxco.ai](https://verify.kxco.ai) works — no server receives your request; verification runs entirely in the browser.
 
 ---
 
-## Manifest shape
+## What this does NOT do
 
-The verifier accepts the manifest shape produced by `kxco-post-quantum` since v1.0.x. The reference document is [`docs/verification.md`](./docs/verification.md). In brief:
-
-```json
-{
-  "manifest": {
-    "site": "example.com",
-    "alg":  "ML-DSA-65",
-    "spec": "NIST FIPS 204",
-    "kid":  "<16 hex chars>",
-    "deployment": { "<opaque-site-defined-fields>": "..." },
-    "msgFormat":  "<template describing what was signed>"
-  },
-  "signedMessage": "<the actual bytes that were signed, as a string>",
-  "signature": { "alg": "ML-DSA-65", "encoding": "hex", "value": "<6618 hex chars>" },
-  "publicKey": {
-    "alg": "ML-DSA-65", "encoding": "hex", "value": "<3904 hex chars>",
-    "kid": "<same as manifest.kid>",
-    "pinAt": "<relative URL of the live well-known pubkey endpoint>"
-  }
-}
-```
-
-Two live, real-world examples ship in [`fixtures/`](./fixtures):
-- `wallet-attestation.json`    — `https://chain.kxco.ai/wallet/api/.well-known/kxco-pq-attestation`
-- `target150-attestation.json` — `https://www.target150.com/api/attestation`
-
-The test suite verifies the math against both.
+- **Cannot sign.** To produce ML-DSA-65 attestations, use [`kxco-pq-sdk`](https://www.npmjs.com/package/kxco-post-quantum) or `kxco-pq-attest`.
+- **Cannot issue credentials.** Credential issuance — including KYC-backed identity documents — is handled by the full KXCO SDK and identity pipeline, not this package.
+- **Not a full identity client.** This package verifies one thing: whether a given ML-DSA-65 signature is mathematically valid and matches the published key. It has no concept of users, sessions, or identity records.
+- **No key registry.** There is no mapping from domain to approved key identifier. Anyone can generate an ML-DSA-65 keypair and publish a self-signed manifest; this library will mark it `"valid"`. A `"valid"` result is a math claim, not an endorsement.
+- **ML-DSA-65 only.** SLH-DSA-128s and hybrid envelopes are not supported in this release.
 
 ---
 
-## Stability + versioning
+## Part of the KXCO stack
 
-- **v0.1.x:** initial release. The 3-state result envelope is the public API; new states will be added only on a major bump. New optional fields on the result object are non-breaking.
-- **No telemetry.** The library makes only the HTTP requests you ask it to (the attestation URL + the publisher-declared `pinAt`). No KXCO endpoint is contacted.
-- **Reproducible builds + SLSA provenance.** Every published version of this package carries an npm provenance attestation showing the exact commit and GitHub Actions workflow that produced it. Verify with `npm view kxco-verify --json | jq .dist.attestations`.
+This package is the receiving end of the KXCO post-quantum signing pipeline.
+
+| Role | Package |
+|---|---|
+| Sign and attest deployments | [`kxco-post-quantum`](https://www.npmjs.com/package/kxco-post-quantum) |
+| Issue PQ-signed credentials | `kxco-pq-attest` |
+| Agent-level signing and policy | `kxco-pq-agent` |
+| **Verify any of the above** | **`kxco-verify`** (this package) |
+| Public web verifier | [verify.kxco.ai](https://verify.kxco.ai) |
+
+The verifier is architecturally independent of the signer — the two share no code. That separation makes this package auditable in isolation: a change to the signing pipeline cannot influence the verifier's behaviour.
 
 ---
 
 ## Security
 
-Signature verification uses [`@noble/post-quantum`](https://github.com/paulmillr/noble-post-quantum) ML-DSA-65 — independently audited by Cure53 (2024), no transitive dependencies. The library makes no outbound requests beyond the attestation URL you supply and the `pinAt` endpoint declared in the manifest itself. No data is sent to KXCO.
+Signature verification uses [`@noble/post-quantum`](https://github.com/paulmillr/noble-post-quantum) ML-DSA-65, independently audited by Cure53 (2024) with no transitive dependencies. The library makes no outbound requests beyond the attestation URL you supply and the `pinAt` endpoint declared in the manifest. No data is sent to KXCO.
 
 To report a vulnerability, open a [private security advisory](https://github.com/JackKXCO/kxco-verify/security/advisories/new) or email **security@kxco.ai**.
 
-## Funding
-
-Maintained by **Shayne Heffernan** and **John Heffernan** at [KXCO by Knightsbridge](https://kxco.ai).
-
-[Knightsbridge Law](https://knightsbridge.law) · [target150.com](https://target150.com) · [livetradingnews.com](https://livetradingnews.com)
+---
 
 ## License
 
 Apache 2.0 — see [LICENSE](./LICENSE).
 
-This library is deliberately permissively licensed and architecturally independent of the (MIT-licensed) [`kxco-post-quantum`](https://www.npmjs.com/package/kxco-post-quantum) signer. The two never share code. That separation makes the verifier auditable in isolation: a change to the signer cannot trick the verifier into trusting an unverified key.
-
 ---
-
-## See also
-
-- [`kxco-post-quantum`](https://www.npmjs.com/package/kxco-post-quantum) — the production-tested signing library used by KnightsVault, KXCO Bank, target150, and others
-- [`verify.kxco.ai`](https://verify.kxco.ai) — public web verifier (runs this library client-side)
-- [`docs/verification.md`](./docs/verification.md) — full end-to-end verification flow
-- [`docs/threat-model.md`](./docs/threat-model.md) — what this library does and does not protect against
 
 ## Maintainers
 
-Shayne Heffernan · John Heffernan — [KXCO by Knightsbridge](https://kxco.ai)
+Shayne Heffernan and John Heffernan — [KXCO by Knightsbridge](https://kxco.ai)
 
-Deployed in production at [target150.com](https://target150.com), [knightsbridgelaw.com](https://knightsbridgelaw.com), [livetradingnews.com](https://livetradingnews.com).
+[knightsbridgelaw.com](https://knightsbridgelaw.com) · [target150.com](https://target150.com) · [livetradingnews.com](https://livetradingnews.com)
