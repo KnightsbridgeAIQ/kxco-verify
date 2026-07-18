@@ -68,7 +68,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@noble/post-quantum": "^0.2.1"
+    "@noble/post-quantum": "^0.6.1"
   },
   "scripts": {
     "test": "node --test --test-reporter=spec test/parse.test.js test/verify.test.js test/fetch.test.js test/index.test.js",
