@@ -233,7 +233,7 @@ The verifier is architecturally independent of the signer — the two share no c
 
 Signature verification uses [`@noble/post-quantum`](https://github.com/paulmillr/noble-post-quantum) ML-DSA-65, independently audited by Cure53 (2024) with no transitive dependencies. The library makes no outbound requests beyond the attestation URL you supply and the `pinAt` endpoint declared in the manifest. No data is sent to KXCO.
 
-To report a vulnerability, open a [private security advisory](https://github.com/JackKXCO/kxco-verify/security/advisories/new) or email **security@kxco.ai**.
+To report a vulnerability, open a [private security advisory](https://github.com/KnightsbridgeAIQ/kxco-verify/security/advisories/new) or email **security@kxco.ai**.
 
 ---
 
