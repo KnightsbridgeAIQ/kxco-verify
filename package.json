@@ -1,7 +1,7 @@
 {
   "name": "kxco-verify",
-  "version": "1.0.5",
-  "description": "Standalone, browser-safe verifier for KXCO ML-DSA-65 post-quantum signed attestations and credentials \u2014 for auditors, regulators, counterparties, and anyone who needs to confirm a signature without running the full KXCO SDK.",
+  "version": "1.1.0",
+  "description": "Standalone, browser-safe verifier for KXCO ML-DSA-65 post-quantum signed attestations and credentials — for auditors, regulators, counterparties, and anyone who needs to confirm a signature without running the full KXCO SDK.",
   "keywords": [
     "post-quantum",
     "pqc",
@@ -22,10 +22,14 @@
     "manifest-verification"
   ],
   "license": "Apache-2.0",
-  "author": "KXCO by Knightsbridge <hello@kxco.ai>",
+  "author": "Shayne Heffernan and John Heffernan",
   "contributors": [
-    { "name": "Shayne Heffernan" },
-    { "name": "John Heffernan" }
+    {
+      "name": "Shayne Heffernan"
+    },
+    {
+      "name": "John Heffernan"
+    }
   ],
   "homepage": "https://verify.kxco.ai",
   "funding": "https://kxco.ai",
@@ -65,10 +69,10 @@
     "CHANGELOG.md"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20.19"
   },
   "dependencies": {
-    "@noble/post-quantum": "^0.2.1"
+    "@noble/post-quantum": "^0.6.1"
   },
   "scripts": {
     "test": "node --test --test-reporter=spec test/parse.test.js test/verify.test.js test/fetch.test.js test/index.test.js",

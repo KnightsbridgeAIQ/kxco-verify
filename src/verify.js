@@ -5,7 +5,7 @@
 // from the Web Crypto API where available (browser, Node 20+), fallback to
 // node:crypto's createHash where SubtleCrypto.digest is not present.
 
-import { ml_dsa65 } from '@noble/post-quantum/ml-dsa'
+import { ml_dsa65 } from '@noble/post-quantum/ml-dsa.js'
 
 /**
  * Hex string → Uint8Array. Throws on malformed input.
@@ -79,10 +79,10 @@ export function verifySignature(publicKey, message, signature) {
   const pk  = typeof publicKey === 'string' ? hexToBytes(publicKey) : publicKey
   const sig = typeof signature === 'string' ? hexToBytes(signature) : signature
   const msg = typeof message   === 'string' ? utf8(message)         : message
-  // @noble/post-quantum signature: (publicKey, message, signature). Matches
-  // the canonical wrapper in kxco-post-quantum/src/ml-dsa.js.
+  // @noble/post-quantum ≥0.6 signature order: (signature, message, publicKey).
+  // Matches the canonical wrapper in kxco-post-quantum/src/ml-dsa.js.
   try {
-    return ml_dsa65.verify(pk, msg, sig)
+    return ml_dsa65.verify(sig, msg, pk)
   } catch {
     return false
   }

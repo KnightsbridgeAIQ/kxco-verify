@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.1.0 — 2026-07-22
+
+Engine modernization. Public API unchanged; all 50 tests pass, including live
+verification of the pinned attestation fixtures.
+
+### Changed
+- **`@noble/post-quantum` bumped `^0.2.1` → `^0.6.1`** (FIPS 203/204/205 final
+  reference implementation). Absorbs the upstream breaking change: `ml_dsa65.verify`
+  argument order is now `(signature, message, publicKey)`, and the subpath import
+  requires the `.js` extension. Both are handled internally — `verifySignature()`
+  behaves identically.
+- `engines.node` raised to `>=20.19` to match the `@noble/post-quantum@0.6`
+  requirement.
+- `author` set to Shayne Heffernan and John Heffernan.
+
 ## 1.0.0 — 2026-05-24
 
 Stable release.
