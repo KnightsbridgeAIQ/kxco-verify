@@ -13,13 +13,26 @@ Only the latest minor on the latest major is supported with security fixes durin
 
 **Do not open a public GitHub issue for security reports.**
 
-Email `hello@kxco.ai` with subject line: `[kxco-verify] SECURITY: <one-line summary>`
+Email `john@knightsbridgelaw.com` with subject line: `[kxco-verify] SECURITY: <one-line summary>`
 
 If you need PGP, also fetch the platform's ML-DSA-65 public key from
 `https://chain.kxco.ai/wallet/api/.well-known/kxco-pq-pubkey` and sign your
 report with your own key — we'll respond in kind.
 
 Acknowledgement within **2 business days**. Triage decision within **5 business days**.
+Coordinated disclosure with a **90-day** default window; sooner where the fix ships sooner.
+
+Full policy: <https://kxco.ai/security>
+
+## Safe harbour
+
+If you make a good-faith effort to comply with this policy, we will treat your
+research as authorised, and we will not pursue or support legal action against
+you. Good faith means: do not access, modify, exfiltrate, or destroy data that
+is not yours; use test accounts where possible; do not degrade service for
+others; and stop and report as soon as you have established that a
+vulnerability exists. This cannot bind third parties, and it does not cover
+extortion, data sale, or public disclosure ahead of the window above.
 
 ## What we treat as in-scope
 
