@@ -101,8 +101,8 @@ Per the [`kxco-post-quantum`](https://www.npmjs.com/package/kxco-post-quantum) e
 
 - **Phase 2:** key registry + revocation. Adds a `"unregistered"` and `"revoked"` state on top of math verification.
 - **Phase 2/3:** transparency log. Adds `anchorTxId` to the result for attestations that have been anchored. The verifier will be able to detect manifests that were signed but never published.
-- **Phase 4:** third-party audit. Until then, treat the math here as trusted only to the extent you trust `@noble/post-quantum` (which has had multiple external reviews) and this library's small surface (which has not).
+- **Phase 4:** third-party audit. Until then, treat the math here as trusted only to the extent you trust `@noble/post-quantum`, which has been self-audited by its maintainer and carries no third-party audit, and this library's small surface, which has neither. Cure53's 2023 NDS-01 audit of the `@noble` ecosystem covered `ciphers`, `curves` and `hashes`, not the post-quantum package.
 
 ## Reporting a security issue
 
-See [`SECURITY.md`](../SECURITY.md) in the repo root if/when published. In the interim, email `hello@kxco.ai` with subject `[kxco-verify] SECURITY`.
+See [`SECURITY.md`](../SECURITY.md) in the repo root. Email `john@knightsbridgelaw.com` with subject `[kxco-verify] SECURITY: <one-line summary>`. Acknowledgement within 2 business days, triage decision within 5. Full policy, including safe harbour for good-faith research: <https://kxco.ai/security>.
