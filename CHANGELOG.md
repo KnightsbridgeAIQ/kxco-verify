@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.1
+
+Released to carry an npm provenance attestation. **No functional change**: no
+source file is touched and the dependency set is identical to the previous
+version.
+
+Earlier releases of this package have no attestation, and provenance attaches to
+a version rather than to a package, so it cannot be applied retroactively. The
+publish workflow now declares `id-token: write`, publishes with `--provenance`
+instead of `--no-provenance`, and authenticates through an npm Trusted Publisher
+binding. Verify with `npm view kxco-verify dist.attestations`.
+
 ## 1.1.0 — 2026-07-22
 
 Engine modernization. Public API unchanged; all 50 tests pass, including live
