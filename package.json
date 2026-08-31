@@ -72,7 +72,7 @@
     "node": ">=20.19"
   },
   "dependencies": {
-    "@noble/post-quantum": "0.7.0"
+    "@noble/post-quantum": "0.7.1"
   },
   "scripts": {
     "test": "node --test --test-reporter=spec test/parse.test.js test/verify.test.js test/fetch.test.js test/index.test.js",
