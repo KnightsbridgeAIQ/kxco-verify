@@ -1,6 +1,6 @@
 {
   "name": "kxco-verify",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Standalone, browser-safe verifier for KXCO ML-DSA-65 post-quantum signed attestations and credentials, for auditors, regulators, counterparties, and anyone who needs to confirm a signature without running the full KXCO SDK.",
   "keywords": [
     "post-quantum",
@@ -72,7 +72,7 @@
     "node": ">=20.19"
   },
   "dependencies": {
-    "@noble/post-quantum": "0.7.1"
+    "@noble/post-quantum": "0.7.0"
   },
   "scripts": {
     "test": "node --test --test-reporter=spec test/parse.test.js test/verify.test.js test/fetch.test.js test/index.test.js",
