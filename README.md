@@ -10,6 +10,29 @@ Standalone post-quantum credential and attestation verifier for KXCO ML-DSA-65 s
 
 ---
 
+## Release integrity
+
+Every release of this package is checkable without asking us for anything.
+
+- **Provenance.** Each release carries a SLSA provenance attestation tying the
+  published tarball to the commit and workflow that built it. Verify with
+  `npm audit signatures`, or read it directly from
+  `registry.npmjs.org/-/npm/v1/attestations/kxco-verify@<version>`.
+- **Bill of materials.** A CycloneDX SBOM is published as a GitHub Release asset
+  at `releases/download/v<version>/sbom.cyclonedx.json`, a permanent
+  unauthenticated URL. Not an expiring build artifact.
+- **Pinned, not floated.** Every runtime dependency is pinned to an exact
+  version, never a range, so the code that performs the cryptography cannot
+  change without a release of this package. Every GitHub Action is pinned by
+  40-character commit SHA.
+- **Conformance.** The primitives are the same ones run against **2,103 NIST
+  ACVP vectors (0 failed)** and a **225-check cross-implementation
+  interoperability matrix** in
+  [`kxco-post-quantum`](https://www.npmjs.com/package/kxco-post-quantum),
+  against liboqs, Bouncy Castle and two pure-Python implementations. This
+  package deliberately shares no code with the signer: a verifier that reached
+  the primitives through the same wrapper would be checking its own work.
+
 ## When to use this
 
 This package is for the **receiving end** of a KXCO signed attestation — anyone who needs to confirm that a signature is genuine without being a KXCO institution or running the full SDK.
