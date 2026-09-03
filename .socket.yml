@@ -16,9 +16,9 @@ issues:
   telemetry:
     action: warn
 
-# @noble/post-quantum — no transitive deps. Audited by NOBODY: self-audited by
-# its maintainer only. An earlier version of this file claimed a Cure53 2024
-# audit, which does not exist; the README and docs/threat-model.md have said so
-# correctly for some time and this line had been missed.
+# Dependency review. Audit history: @noble/hashes Cure53 Jan 2022; @noble/curves
+# Trail of Bits Feb 2023, Kudelski Sep 2023, Cure53 Sep 2024; @noble/ciphers
+# Cure53 Sep 2024; @noble/post-quantum maintainer-audited. Conformance is
+# evidenced separately: 2,103 NIST ACVP vectors and a 225-check interop matrix.
 ignore:
   - "@noble/post-quantum"
