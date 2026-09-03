@@ -101,7 +101,7 @@ Per the [`kxco-post-quantum`](https://www.npmjs.com/package/kxco-post-quantum) e
 
 - **Phase 2:** key registry + revocation. Adds a `"unregistered"` and `"revoked"` state on top of math verification.
 - **Phase 2/3:** transparency log. Adds `anchorTxId` to the result for attestations that have been anchored. The verifier will be able to detect manifests that were signed but never published.
-- **Phase 4:** third-party audit. Until then, treat the math here as trusted only to the extent you trust `@noble/post-quantum`, which has been self-audited by its maintainer and carries no third-party audit, and this library's small surface, which has neither. Cure53's 2023 NDS-01 audit of the `@noble` ecosystem covered `ciphers`, `curves` and `hashes`, not the post-quantum package.
+- **Phase 4:** third-party audit. Until then, treat the math here as trusted only to the extent you trust `@noble/post-quantum`, which has been self-audited by its maintainer and carries no third-party audit, and this library's small surface, which has neither. No Cure53 engagement has ever covered the post-quantum package. The other Noble packages were audited separately and at different dates — `@noble/hashes` by Cure53 in January 2022, `@noble/curves` by Trail of Bits, Kudelski and Cure53 across 2023-2024, `@noble/ciphers` by Cure53 in September 2024 — and none of those engagements reached it.
 
 ## Reporting a security issue
 

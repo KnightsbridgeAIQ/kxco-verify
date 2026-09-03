@@ -55,7 +55,56 @@ If you need to **sign** attestations, see the packages listed under [Part of the
 npm install kxco-verify
 ```
 
-Node 18+. ESM only.
+Node 18+. ESM only. One dependency, and no KXCO server in the trust path.
+
+---
+
+## Command line
+
+```bash
+npx kxco-verify https://example.com/.well-known/kxco-pq-attestation
+```
+
+```
+VALID  example.com
+  algorithm    ML-DSA-65
+  kid          aa29f37ab7f4b2cf
+
+This means the site signed its own manifest with a key it published.
+It is not an endorsement of the site, its owner, or its content.
+```
+
+`--file <path>` verifies a manifest you already have. `--json` prints a machine-readable result.
+
+Exit codes are meant for CI: **0** valid, **1** invalid or revoked, **2** could not fetch or parse, **3** rotated.
+
+### `--live`
+
+A signature made by a key that was revoked an hour ago is still a perfectly valid signature. The maths cannot tell you so. `--live` asks the KXCO key registry whether the signing kid is still active:
+
+```bash
+npx kxco-verify https://example.com/.well-known/kxco-pq-attestation --live
+```
+
+```
+VALID  example.com
+  kid          aa29f37ab7f4b2cf
+  registry     revoked
+```
+
+That exits **1**. The signature is still valid; the key is not trusted any more, and those are different facts.
+
+`--live` **fails closed**: if the registry cannot be reached, the result is not valid. A check that could not run has not passed.
+
+It needs [`kxco-pq-network`](https://www.npmjs.com/package/kxco-pq-network), an **optional** peer dependency. It is not installed by default and nothing else here needs it — install it only if you want the flag:
+
+```bash
+npm install kxco-pq-network
+```
+
+Registry base URL defaults to `https://chain.kxco.ai` and can be changed with `--registry`. A licence key, via `--licence` or `KXCO_LICENCE_KEY`, meters the reads; reads without one are allowed and rate-limited.
+
+Everything above the `--live` heading works offline, forever, with no account and no licence. That is not changing.
 
 ---
 
@@ -254,7 +303,7 @@ The verifier is architecturally independent of the signer — the two share no c
 
 ## Security
 
-Signature verification uses [`@noble/post-quantum`](https://github.com/paulmillr/noble-post-quantum) ML-DSA-65, with no transitive dependencies. That package has **not** been independently audited by a third party; it has been self-audited by its maintainer. Cure53's 2023 NDS-01 audit of the `@noble` ecosystem covered `ciphers`, `curves` and `hashes`, and did not cover `@noble/post-quantum`. We state this plainly because you should not adopt a verification library on the strength of an audit that does not exist.
+Signature verification uses [`@noble/post-quantum`](https://github.com/paulmillr/noble-post-quantum) ML-DSA-65, with no transitive dependencies. That package has **not** been independently audited by a third party; it has been self-audited by its maintainer. The other Noble packages have been audited, but separately and at different times: `@noble/hashes` by Cure53 in January 2022, `@noble/curves` by Trail of Bits in February 2023, Kudelski in September 2023 and Cure53 in September 2024, and `@noble/ciphers` by Cure53 in September 2024. None of those engagements covered the post-quantum package. We state this plainly because you should not adopt a verification library on the strength of an audit that does not exist.
 
 The library makes no outbound requests beyond the attestation URL you supply and the `pinAt` endpoint declared in the manifest. No data is sent to KXCO.
 

@@ -16,6 +16,9 @@ issues:
   telemetry:
     action: warn
 
-# @noble/post-quantum — no transitive deps, audited by Cure53 (2024).
+# @noble/post-quantum — no transitive deps. Audited by NOBODY: self-audited by
+# its maintainer only. An earlier version of this file claimed a Cure53 2024
+# audit, which does not exist; the README and docs/threat-model.md have said so
+# correctly for some time and this line had been missed.
 ignore:
   - "@noble/post-quantum"

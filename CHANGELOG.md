@@ -1,5 +1,39 @@
 # Changelog
 
+## 1.3.0
+
+Additive. The library is byte-for-byte unchanged: same one dependency, same
+offline behaviour, no notion of a chain anywhere in `src/`.
+
+### A command line
+
+`npx kxco-verify <url>` fetches and verifies an attestation, with `--file` for
+a manifest you already have and `--json` for CI. Exit codes: 0 valid, 1 invalid
+or revoked, 2 fetch or parse error, 3 rotated.
+
+The default path contacts nothing but the site being checked. No KXCO server,
+no licence, no account. That is what this package is for and it is not
+changing.
+
+### `--live`
+
+Asks the KXCO key registry whether the signing kid is still active, after the
+maths has passed. A signature made by a key revoked an hour ago is still a
+perfectly valid signature, and no offline check can tell you otherwise.
+
+It **fails closed**: an unreachable registry means not valid. A check that
+could not run has not passed.
+
+It needs `kxco-pq-network`, declared as an **optional** peer dependency so it
+is not installed by default. Without it the flag prints what to install and
+exits 2; everything else is unaffected. This is deliberate: making it a real
+dependency would put a chain-aware package in the install path of a library
+whose whole claim is that it has neither.
+
+The registry is asked only once the signature has verified. A forged manifest
+is a forged manifest whatever the registry says about the key it names, and
+reporting it as a revocation would mislead.
+
 ## 1.2.1
 
 Released to carry an npm provenance attestation. **No functional change**: no
