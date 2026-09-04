@@ -1,7 +1,7 @@
 {
   "name": "kxco-verify",
   "version": "1.3.0",
-  "description": "Standalone, browser-safe verifier for KXCO ML-DSA-65 post-quantum signed attestations and credentials, for auditors, regulators, counterparties, and anyone who needs to confirm a signature without running the full KXCO SDK.",
+  "description": "Browser-safe verifier for KXCO ML-DSA-65 attestations and credentials. Works offline with no server in the path, so an auditor, regulator or counterparty confirms a signature years later from the artefact alone, and can check the key is still live against the on-chain registry.",
   "keywords": [
     "post-quantum",
     "pqc",

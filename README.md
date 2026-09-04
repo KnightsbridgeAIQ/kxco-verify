@@ -275,15 +275,16 @@ This is how [verify.kxco.ai](https://verify.kxco.ai) works — no server receive
 
 ---
 
-## What this does NOT do
+## Where this fits
 
-- **Cannot sign.** To produce ML-DSA-65 attestations, use [`kxco-pq-sdk`](https://www.npmjs.com/package/kxco-post-quantum) or `kxco-pq-attest`.
-- **Cannot issue credentials.** Credential issuance — including KYC-backed identity documents — is handled by the full KXCO SDK and identity pipeline, not this package.
-- **Not a full identity client.** This package verifies one thing: whether a given ML-DSA-65 signature is mathematically valid and matches the published key. It has no concept of users, sessions, or identity records.
-- **No key registry.** There is no mapping from domain to approved key identifier. Anyone can generate an ML-DSA-65 keypair and publish a self-signed manifest; this library will mark it `"valid"`. A `"valid"` result is a math claim, not an endorsement.
-- **ML-DSA-65 only.** SLH-DSA-128s and hybrid envelopes are not supported in this release.
+One job, done where nothing else is available: given an artefact and a public
+key, is this signature valid. Browser-safe, offline, no server in the path.
+That is what lets an auditor confirm something years after it was issued.
 
----
+**ML-DSA-65**, the parameter set the KXCO stack signs with.
+
+- [`kxco-pq-sdk`](https://www.npmjs.com/package/kxco-pq-sdk) to produce attestations and issue credentials
+- [`kxco-pq-network`](https://www.npmjs.com/package/kxco-pq-network) to also confirm the signing key is still live in the on-chain registry
 
 ## Part of the KXCO stack
 
