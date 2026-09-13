@@ -65,13 +65,16 @@ jobs:
       - name: Run tests
         run: npm test
 
+      # No NODE_AUTH_TOKEN. This step used to carry a long-lived NPM_TOKEN as a
+      # bootstrap fallback, described in a comment as safe to leave because the
+      # npm CLI ignores it when OIDC succeeds. It is not safe to leave: a token
+      # that can publish without a second factor is exactly what npm is removing
+      # (account changes Aug 2026, direct publish Jan 2027), and while it sat here
+      # any run that failed OIDC would silently fall back to it. Two packages in
+      # this family were published under the user account rather than through
+      # Actions for that reason. Trusted Publishing is now the only path in.
       - name: Publish (provenance via OIDC; uses Trusted Publishing once configured)
         run: npm publish --provenance --access public
-        env:
-          # Only needed for the first publish (before Trusted Publishing is
-          # configured on the npm side). Safe to leave the line — npm CLI
-          # ignores the env var when OIDC succeeds.
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # The SBOM runs AFTER the publish and cannot fail the job. The package is
       # already on the registry by this point, so failing here would misreport a
