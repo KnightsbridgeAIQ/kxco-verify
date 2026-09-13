@@ -7,8 +7,12 @@ name: publish
 # then, the first publish needs an NPM_TOKEN repo secret. After the package
 # exists, configure Trusted Publishing at:
 #   https://www.npmjs.com/package/kxco-verify/access  →  Trusted Publishers
-# Binding to: org=JackKXCO, repo=kxco-verify, workflow file=publish.yml
-# Then delete the NPM_TOKEN secret.
+# Bind to:  org=KnightsbridgeAIQ  repo=kxco-verify  workflow=publish.yml
+#
+# This said org=JackKXCO until 13 Sep 2026. The repositories moved to the
+# KnightsbridgeAIQ org and the binding instruction was never updated, so
+# anyone configuring from this comment would have bound a stale org.
+# The NPM_TOKEN fallback this used to describe has been removed.
 #
 # All third-party actions pinned by 40-char commit SHA.
 
