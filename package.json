@@ -1,7 +1,7 @@
 {
   "name": "kxco-verify",
-  "version": "1.3.0",
-  "description": "Browser-safe verifier for KXCO ML-DSA-65 attestations and credentials. Works offline with no server in the path, so an auditor, regulator or counterparty confirms a signature years later from the artefact alone, and can check the key is still live against the on-chain registry.",
+  "version": "1.3.1",
+  "description": "Free, browser-safe verifier for KXCO ML-DSA-65 post-quantum signatures, with no KXCO server in the trust path. An auditor, regulator or counterparty confirms a signature from the artefact alone, years later, and can check the key is still live against the on-chain registry.",
   "keywords": [
     "post-quantum",
     "pqc",
@@ -15,11 +15,17 @@
     "kxco-post-quantum",
     "browser",
     "browser-safe",
-    "zero-dependencies",
     "supply-chain",
     "deploy-attestation",
     "provenance",
-    "manifest-verification"
+    "manifest-verification",
+    "pqc-migration",
+    "digital-signature",
+    "signature-verification",
+    "non-repudiation",
+    "tamper-evident",
+    "offline-verification",
+    "cli"
   ],
   "license": "Apache-2.0",
   "author": "Shayne Heffernan and John Heffernan",

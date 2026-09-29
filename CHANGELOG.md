@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.3.1
+
+Documentation. No source change.
+
+**The npm page leads with what the package proves.** The first screen now says
+what a verification checks and where it runs: in a browser or a terminal, from
+the artefact alone, with no KXCO server in the trust path, on the
+`@noble/post-quantum` release NIST's vectors pass, alongside the migration dates
+set by NIST, Executive Order 14412, OMB M-26-15 and the UK NCSC.
+
+A family table maps every KXCO package to the job it does, and a new For
+institutions section sets out the operated services and how to reach us. The
+evidence documents are unchanged and linked from the page.
+
+The examples run as written. The command line and the quick start verify the
+live attestation at target150.com, and the browser import map maps each package
+folder so the library loads in a browser. The page gives the supported runtime
+as Node.js 20.19 and later, and the fetch defaults as 3000 ms per request and
+200,000 bytes.
+
 ## 1.3.0
 
 Additive. The library is byte-for-byte unchanged: same one dependency, same
