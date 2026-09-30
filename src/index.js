@@ -174,7 +174,7 @@ export async function verifyUrl(attestationUrl, opts = {}) {
 
   // Two ways the publisher may serve the kid: explicit "kid" field, or we
   // recompute from the publicKey hex. Prefer recompute as the source of truth.
-  const livePubkeyHex = typeof liveJson.publicKey === 'string'
+  const livePubkeyHex = typeof liveJson?.publicKey === 'string'
     ? liveJson.publicKey
     : (typeof liveJson?.value === 'string' ? liveJson.value : null)
   if (!livePubkeyHex) {
@@ -183,7 +183,14 @@ export async function verifyUrl(attestationUrl, opts = {}) {
     result.verifiedAtMs = Date.now()
     return result
   }
-  const liveKid = await computeKid(livePubkeyHex)
+  let liveKid
+  try { liveKid = await computeKid(livePubkeyHex) }
+  catch (err) {
+    result.pubkeyUrl = pubkeyUrl
+    result.error = { kind: 'parse', code: 'invalid_live_pubkey', message: `live pubkey is not hex: ${err.message}`, soft: true }
+    result.verifiedAtMs = Date.now()
+    return result
+  }
   result.pubkeyUrl     = pubkeyUrl
   result.livePubkeyKid = liveKid
 

@@ -28,6 +28,18 @@ test('hexToBytes rejects non-hex input', () => {
   assert.throws(() => hexToBytes('zz'), /malformed hex/)
 })
 
+test('hexToBytes refuses a character that is not a hex digit, wherever it sits in a byte', () => {
+  for (const bad of ['0g', '+a', '-1', ' a', 'a ', '0x', '1.', 'aa0g']) {
+    assert.throws(() => hexToBytes(bad), (e) => e instanceof TypeError && /malformed hex/.test(e.message), JSON.stringify(bad))
+  }
+})
+
+test('verifySignature and computeKid refuse the same malformed hex rather than reading a prefix of it', async () => {
+  assert.throws(() => verifySignature('+a', 'm', '00'), /malformed hex/)
+  assert.throws(() => verifySignature('00', 'm', '0g'), /malformed hex/)
+  await assert.rejects(() => computeKid('-1'), /malformed hex/)
+})
+
 test('utf8 encodes ascii correctly', () => {
   const b = utf8('abc')
   assert.deepEqual([...b], [97, 98, 99])

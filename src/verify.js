@@ -16,12 +16,12 @@ export function hexToBytes(hex) {
   if (typeof hex !== 'string' || hex.length % 2 !== 0) {
     throw new TypeError('hex input must be a string of even length')
   }
+  // Checked up front because parseInt reads a prefix: on its own it would take
+  // '0g' as 0, '+a' as 10 and '-1' as 255, giving one byte several spellings.
+  const bad = hex.search(/[^0-9a-fA-F]/)
+  if (bad !== -1) throw new TypeError(`malformed hex at offset ${bad}`)
   const out = new Uint8Array(hex.length / 2)
-  for (let i = 0; i < out.length; i++) {
-    const byte = parseInt(hex.substr(i * 2, 2), 16)
-    if (Number.isNaN(byte)) throw new TypeError(`malformed hex at offset ${i * 2}`)
-    out[i] = byte
-  }
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.substr(i * 2, 2), 16)
   return out
 }
 

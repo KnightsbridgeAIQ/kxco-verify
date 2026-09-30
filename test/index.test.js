@@ -6,7 +6,11 @@
 
 import { test }     from 'node:test'
 import assert       from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
+import { readFile, mkdtemp, writeFile, rm } from 'node:fs/promises'
+import { spawnSync } from 'node:child_process'
+import { tmpdir }   from 'node:os'
+import { join }     from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import { verifyManifest, verifyUrl } from '../src/index.js'
 
@@ -78,7 +82,69 @@ test('verifyManifest returns state="error" when JSON is malformed', async () => 
   assert.equal(r.error.kind, 'parse')
 })
 
+test('verifyManifest returns state="error" for a JSON body that is null', async () => {
+  const r = await verifyManifest('null')
+  assert.equal(r.state, 'error')
+  assert.equal(r.error.kind, 'parse')
+  assert.equal(r.error.code, 'invalid_input')
+})
+
+test('the command line refuses a --file manifest that is null with exit code 2 and a parse error, not a stack trace', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'kxco-verify-cli-'))
+  try {
+    const file = join(dir, 'null.json')
+    await writeFile(file, 'null')
+    const bin = fileURLToPath(new URL('../bin/kxco-verify.js', import.meta.url))
+    const run = spawnSync(process.execPath, [bin, '--file', file, '--json'], { encoding: 'utf8' })
+    assert.equal(run.status, 2, run.stderr)
+    assert.equal(run.stderr, '')
+    const out = JSON.parse(run.stdout)
+    assert.equal(out.state, 'error')
+    assert.equal(out.error.code, 'invalid_input')
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
+})
+
 // verifyUrl with fake fetch
+test('verifyUrl returns state="error" when the attestation URL serves null', async () => {
+  const fakeFetch = async () => fakeFetchOk('null')
+  const r = await verifyUrl('https://example.invalid/api/attestation', { fetchImpl: fakeFetch })
+  assert.equal(r.state, 'error')
+  assert.equal(r.error.code, 'invalid_input')
+})
+
+test('verifyUrl returns "valid" with soft error when the live pubkey body is null', async () => {
+  const fxs = await loadFixtures()
+  const f = fxs.wallet
+  const fakeFetch = async (url) => {
+    if (url === f.attestationUrl) return fakeFetchOk(f.attestationBody)
+    if (url === f.pubkeyUrl)      return fakeFetchOk('null')
+    throw new Error(`unexpected fetch: ${url}`)
+  }
+  const r = await verifyUrl(f.attestationUrl, { fetchImpl: fakeFetch })
+  assert.equal(r.state, 'valid')
+  assert.equal(r.error.code, 'live_pubkey_missing')
+  assert.equal(r.error.soft, true)
+})
+
+test('verifyUrl returns "valid" with soft error when the live pubkey is not hex', async () => {
+  const fxs = await loadFixtures()
+  const f = fxs.wallet
+  for (const publicKey of ['zz', 'abc', '+a'.repeat(1952)]) {
+    const fakeFetch = async (url) => {
+      if (url === f.attestationUrl) return fakeFetchOk(f.attestationBody)
+      if (url === f.pubkeyUrl)      return fakeFetchOk(JSON.stringify({ publicKey }))
+      throw new Error(`unexpected fetch: ${url}`)
+    }
+    const r = await verifyUrl(f.attestationUrl, { fetchImpl: fakeFetch })
+    assert.equal(r.state, 'valid', publicKey.slice(0, 8))
+    assert.equal(r.error.code, 'invalid_live_pubkey', publicKey.slice(0, 8))
+    assert.equal(r.error.soft, true)
+    assert.equal(r.livePubkeyKid, undefined)
+  }
+})
+
 for (const name of ['wallet', 'target150']) {
   test(`verifyUrl returns state="valid" for ${name} (live pubkey matches manifest kid)`, async () => {
     const fxs = await loadFixtures()
