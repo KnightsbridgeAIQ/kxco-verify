@@ -316,6 +316,8 @@ test('verifyUrl: the live key decides between valid and rotated, wherever pinAt 
     async (host, path, pin, rotated, valueField) => {
       const attestationUrl = `https://${host}.example/api/${path}`
       const pubkeyUrl = new URL(pin, attestationUrl).toString()
+      // A pinAt that resolves to the attestation itself serves the manifest, not a key.
+      fc.pre(pubkeyUrl !== attestationUrl)
       const body = clone(base)
       body.publicKey.pinAt = pin
       const live = rotated ? other : signer
