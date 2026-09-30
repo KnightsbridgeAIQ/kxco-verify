@@ -126,7 +126,7 @@ function render(result, live, opts) {
 
   // A valid result means one thing, and people read more into it than it says.
   if (result.state === 'valid') {
-    console.log(`\n${ANSI.dim}This means the site signed its own manifest with a key it published.`)
+    console.log(`\n${ANSI.dim}This means the key this manifest publishes signed its signedMessage.`)
     console.log(`It is not an endorsement of the site, its owner, or its content.${ANSI.reset}`)
   }
 }

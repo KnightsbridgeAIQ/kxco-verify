@@ -5,9 +5,10 @@
 //   whether a site's post-quantum deploy attestation is mathematically valid.
 //
 // What it deliberately does NOT do:
-//   - Endorse any site. A "valid" result means "the site signed its own
-//     manifest with a key it published" — nothing about who the site is or
-//     whether its content is trustworthy.
+//   - Endorse any site. A "valid" result means "the key this manifest
+//     publishes signed its signedMessage" (for KXCO manifests, the kid, commit
+//     and environment), nothing about who the site is or whether its content
+//     is trustworthy.
 //   - Maintain a registry of approved (domain, kid) pairs. That is a future
 //     phase of kxco-post-quantum / verify.kxco.ai and not in this library.
 //   - Speak any algorithm other than ML-DSA-65 with hex encoding in this

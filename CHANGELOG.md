@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.3
+
+A manifest body that is valid JSON but not an object is refused with
+`invalid_input` by parseManifest, verifyManifest and verifyUrl, and `--file`
+exits 2 with the parse error. hexToBytes refuses characters that are not hex
+digits. verifyUrl reports a live key endpoint serving `null` as
+`live_pubkey_missing`, and a key that is not hex as the soft error
+`invalid_live_pubkey`.
+
+The README and the command line state exactly what a `"valid"` result covers:
+the manifest's `signedMessage`, which for KXCO manifests is the key identifier,
+commit and environment.
+
 ## 1.3.2
 
 Documentation. No source change.

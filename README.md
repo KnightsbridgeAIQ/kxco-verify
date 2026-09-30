@@ -62,7 +62,7 @@ VALID  target150.com
   algorithm    ML-DSA-65
   kid          680f9af0bb44de3f
 
-This means the site signed its own manifest with a key it published.
+This means the key this manifest publishes signed its signedMessage.
 It is not an endorsement of the site, its owner, or its content.
 ```
 
@@ -126,12 +126,12 @@ const result = await verifyManifest(body)
 
 | `state` | Meaning |
 |---|---|
-| `"valid"` | Signature checks out against the manifest-declared key, and that key matches the live well-known endpoint. |
+| `"valid"` | Signature checks out against the manifest-declared key, and, where the manifest declares `pinAt`, that key matches the live well-known endpoint. |
 | `"rotated"` | Signature checks out, but the live well-known endpoint now serves a different key. The site is mid key-rotation: retry shortly. |
 | `"invalid"` | The signature does not verify under the manifest-declared key, or the key identifier is inconsistent with the published key bytes. |
 | `"error"` | The verifier could not run: network failure, malformed JSON, or unsupported algorithm. |
 
-A `"valid"` result is a precise cryptographic statement: the site signed this manifest with the key it publishes. Who operates the site is a separate question, covered in [`docs/threat-model.md`](./docs/threat-model.md).
+A `"valid"` result is a precise cryptographic statement: the key this manifest publishes signed its `signedMessage`, and where the manifest declares `pinAt`, `verifyUrl` found that key served there now. For KXCO's manifests `signedMessage` is `{kid}.{deployment.git_commit}.{deployment.env}`, so the key identifier, commit and environment are signed. `site`, `msgFormat` and the other `deployment` fields are read from the manifest as served. Who operates the site is a separate question, covered in [`docs/threat-model.md`](./docs/threat-model.md).
 
 ## For institutions
 
