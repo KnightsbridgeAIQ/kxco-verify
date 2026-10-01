@@ -60,6 +60,10 @@ export function parseManifest(input) {
   if (typeof input === 'string') {
     try { raw = JSON.parse(input) }
     catch (err) { return err_('invalid_json', `body is not valid JSON: ${err.message}`) }
+    // Valid JSON is not yet a manifest. `null`, a number, a string or a
+    // boolean has no fields to read, so it is refused here like any other
+    // input that is not an object.
+    if (!raw || typeof raw !== 'object') return err_('invalid_input', 'body must be a JSON object')
   } else if (input && typeof input === 'object') {
     raw = input
   } else {

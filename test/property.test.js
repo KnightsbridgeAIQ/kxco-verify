@@ -103,10 +103,25 @@ test('hex helpers: any bytes round-trip, in either case, and the encoding is low
   }), { numRuns: 300 })
 })
 
-test('hexToBytes: an odd-length string or a non-string is refused with a TypeError', () => {
+test('hexToBytes: anything but an even-length run of hex digits is refused with a TypeError', () => {
   const odd = fc.string({ maxLength: 200, unit: 'binary', size: 'medium' }).filter((s) => s.length % 2 === 1)
+  // Even length, with at least one character that is not a hex digit. Placing
+  // it inside otherwise valid hex reaches the second digit of a byte, where a
+  // decoder that reads a prefix of each pair would accept it.
+  const nonHex = fc.string({ minLength: 1, maxLength: 1, unit: 'binary' }).filter((c) => !/[0-9a-fA-F]/.test(c))
+  const evenBad = fc.oneof(
+    fc.tuple(fc.stringMatching(/^[0-9a-fA-F]{0,40}$/), nonHex, fc.stringMatching(/^[0-9a-fA-F]{0,40}$/))
+      .map(([a, c, b]) => a + c + b)
+      .map((s) => (s.length % 2 === 0 ? s : s + '0')),
+    fc.string({ maxLength: 200, unit: 'binary', size: 'medium' })
+      .filter((s) => s.length % 2 === 0 && !/^[0-9a-fA-F]*$/.test(s)),
+  )
   fc.assert(fc.property(fc.oneof(odd, notString), (input) => {
     assert.throws(() => hexToBytes(input), (e) => e instanceof TypeError && /even length/.test(e.message))
+    return true
+  }), { numRuns: 300 })
+  fc.assert(fc.property(evenBad, (input) => {
+    assert.throws(() => hexToBytes(input), (e) => e instanceof TypeError && /malformed hex/.test(e.message))
     return true
   }), { numRuns: 300 })
 })
@@ -219,25 +234,32 @@ test('verifyManifest: a signed field replaced by any other JSON value is refused
   }), { numRuns: 400 })
 })
 
-test('verifyManifest: arbitrary text never verifies', async () => {
-  const text = fc.oneof(fc.string({ maxLength: 400, unit: 'binary', size: 'medium' }), fc.json())
+test('verifyManifest: arbitrary text never verifies, and is refused with an error result rather than a throw', async () => {
+  const text = fc.oneof(
+    fc.string({ maxLength: 400, unit: 'binary', size: 'medium' }),
+    fc.json(),
+    fc.jsonValue({ maxDepth: 2 }).map((v) => JSON.stringify(v)),
+  )
   await fc.assert(fc.asyncProperty(text, async (t) => {
-    let r
-    try { r = await verifyManifest(t) } catch { return true }
-    return r.state !== 'valid'
+    const r = await verifyManifest(t)
+    return (r.state === 'error' || r.state === 'invalid') && typeof r.error?.code === 'string'
   }), { numRuns: 500 })
 })
 
-test('parseManifest: an object that is not a signed manifest, or text that is not JSON, is refused with a parse error', () => {
+test('parseManifest: any JSON value that is not a signed manifest, as an object or as text, and text that is not JSON, is refused with a parse error', () => {
   const notJson = fc.string({ maxLength: 300, unit: 'binary', size: 'medium' }).filter((s) => {
     try { JSON.parse(s); return false } catch { return true }
   })
-  fc.assert(fc.property(fc.oneof(fc.object(), notJson), (input) => {
+  const value = fc.oneof(fc.object(), fc.jsonValue({ maxDepth: 2 }))
+  fc.assert(fc.property(fc.oneof(value, value.map((v) => JSON.stringify(v)), notJson), (input) => {
+    const isText = typeof input === 'string'
+    let isJson = false
+    if (isText) try { JSON.parse(input); isJson = true } catch { /* not JSON */ }
     const r = parseManifest(input)
     return r.ok === false &&
       r.error.kind === 'parse' &&
       typeof r.error.code === 'string' &&
-      (typeof input !== 'string' || r.error.code === 'invalid_json')
+      (!isText || isJson || r.error.code === 'invalid_json')
   }), { numRuns: 500 })
 })
 
@@ -261,6 +283,28 @@ test('verifySignature: fails closed on an arbitrary signature', () => {
   }), RUNS)
 })
 
+test('verifyUrl: whatever JSON the attestation or the live key endpoint serves, the result is a state, never a throw', async () => {
+  const base = publish(signer, { site: 'example.test', commit: 'c0ffee', env: 'production' })
+  const attestationUrl = 'https://example.test/api/attestation'
+  const pubkeyUrl = new URL(base.publicKey.pinAt, attestationUrl).toString()
+  const served = fc.oneof(
+    fc.jsonValue({ maxDepth: 2 }),
+    fc.string({ maxLength: 80, unit: 'binary' }).map((publicKey) => ({ publicKey })),
+    fc.string({ maxLength: 80, unit: 'binary' }).map((value) => ({ value })),
+  )
+  await fc.assert(fc.asyncProperty(fc.boolean(), served, async (atAttestation, body) => {
+    const fetchImpl = async (url) => {
+      if (url === attestationUrl) return new Response(JSON.stringify(atAttestation ? body : base), { status: 200 })
+      if (url === pubkeyUrl) return new Response(JSON.stringify(body), { status: 200 })
+      throw new Error(`unexpected fetch: ${url}`)
+    }
+    const r = await verifyUrl(attestationUrl, { fetchImpl })
+    return atAttestation
+      ? r.state === 'error' && r.error.kind === 'parse'
+      : ['valid', 'rotated'].includes(r.state) && (r.state === 'rotated' || r.error === undefined || r.error.soft === true)
+  }), { numRuns: 200 })
+})
+
 test('verifyUrl: the live key decides between valid and rotated, wherever pinAt points', async () => {
   const base = publish(signer, { site: 'example.test', commit: 'c0ffee', env: 'production' })
   const pinAt = fc.oneof(
@@ -272,6 +316,8 @@ test('verifyUrl: the live key decides between valid and rotated, wherever pinAt 
     async (host, path, pin, rotated, valueField) => {
       const attestationUrl = `https://${host}.example/api/${path}`
       const pubkeyUrl = new URL(pin, attestationUrl).toString()
+      // A pinAt that resolves to the attestation itself serves the manifest, not a key.
+      fc.pre(pubkeyUrl !== attestationUrl)
       const body = clone(base)
       body.publicKey.pinAt = pin
       const live = rotated ? other : signer

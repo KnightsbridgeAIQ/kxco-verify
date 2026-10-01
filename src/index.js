@@ -5,9 +5,10 @@
 //   whether a site's post-quantum deploy attestation is mathematically valid.
 //
 // What it deliberately does NOT do:
-//   - Endorse any site. A "valid" result means "the site signed its own
-//     manifest with a key it published" — nothing about who the site is or
-//     whether its content is trustworthy.
+//   - Endorse any site. A "valid" result means "the key this manifest
+//     publishes signed its signedMessage" (for KXCO manifests, the kid, commit
+//     and environment), nothing about who the site is or whether its content
+//     is trustworthy.
 //   - Maintain a registry of approved (domain, kid) pairs. That is a future
 //     phase of kxco-post-quantum / verify.kxco.ai and not in this library.
 //   - Speak any algorithm other than ML-DSA-65 with hex encoding in this
@@ -174,7 +175,7 @@ export async function verifyUrl(attestationUrl, opts = {}) {
 
   // Two ways the publisher may serve the kid: explicit "kid" field, or we
   // recompute from the publicKey hex. Prefer recompute as the source of truth.
-  const livePubkeyHex = typeof liveJson.publicKey === 'string'
+  const livePubkeyHex = typeof liveJson?.publicKey === 'string'
     ? liveJson.publicKey
     : (typeof liveJson?.value === 'string' ? liveJson.value : null)
   if (!livePubkeyHex) {
@@ -183,7 +184,14 @@ export async function verifyUrl(attestationUrl, opts = {}) {
     result.verifiedAtMs = Date.now()
     return result
   }
-  const liveKid = await computeKid(livePubkeyHex)
+  let liveKid
+  try { liveKid = await computeKid(livePubkeyHex) }
+  catch (err) {
+    result.pubkeyUrl = pubkeyUrl
+    result.error = { kind: 'parse', code: 'invalid_live_pubkey', message: `live pubkey is not hex: ${err.message}`, soft: true }
+    result.verifiedAtMs = Date.now()
+    return result
+  }
   result.pubkeyUrl     = pubkeyUrl
   result.livePubkeyKid = liveKid
 

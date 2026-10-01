@@ -47,6 +47,15 @@ test('parseManifest rejects non-string non-object input', () => {
   assert.equal(r.error.code, 'invalid_input')
 })
 
+test('parseManifest refuses a JSON body that is not an object, null included, with a parse error', () => {
+  for (const body of ['null', '42', '"text"', 'true']) {
+    const r = parseManifest(body)
+    assert.equal(r.ok, false, body)
+    assert.equal(r.error.kind, 'parse', body)
+    assert.equal(r.error.code, 'invalid_input', body)
+  }
+})
+
 test('parseManifest rejects missing manifest block', () => {
   const r = parseManifest({ signature: {}, publicKey: {} })
   assert.equal(r.ok, false)
