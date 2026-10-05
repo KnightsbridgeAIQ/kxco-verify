@@ -1,7 +1,6 @@
 # Changelog
 
-## Unreleased
-
+## 1.4.0
 ML-DSA-87 manifests verify alongside ML-DSA-65. parseManifest accepts
 `"ML-DSA-87"` where all three alg fields name it, and requires the public key
 and signature to be exactly that set's sizes: 2592 and 4627 bytes for
