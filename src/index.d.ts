@@ -11,7 +11,7 @@ export interface VerifyResultError {
 
 export interface VerifyResult {
   state: VerifyState
-  algorithm?: 'ML-DSA-65'
+  algorithm?: 'ML-DSA-65' | 'ML-DSA-87'
   /** kid as declared inside the manifest itself */
   manifestKid?: string
   /** kid currently served at the live well-known pubkey endpoint (when fetched) */

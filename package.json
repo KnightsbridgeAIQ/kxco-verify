@@ -83,8 +83,8 @@
     "@noble/post-quantum": "0.7.0"
   },
   "scripts": {
-    "test": "node --test --test-reporter=spec test/parse.test.js test/verify.test.js test/fetch.test.js test/index.test.js test/property.test.js",
-    "test:cov": "node --test --experimental-test-coverage test/parse.test.js test/verify.test.js test/fetch.test.js test/index.test.js",
+    "test": "node --test --test-reporter=spec test/parse.test.js test/verify.test.js test/fetch.test.js test/index.test.js test/ml-dsa-87.test.js test/property.test.js",
+    "test:cov": "node --test --experimental-test-coverage test/parse.test.js test/verify.test.js test/fetch.test.js test/index.test.js test/ml-dsa-87.test.js",
     "smoke": "node scripts/smoke.js",
     "lint": "node -c src/index.js && node -c src/parse.js && node -c src/verify.js && node -c src/fetch.js"
   },

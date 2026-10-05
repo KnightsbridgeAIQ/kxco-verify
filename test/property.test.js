@@ -18,7 +18,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import fc from 'fast-check'
-import { mlDsa, fingerprint } from 'kxco-post-quantum'
+import { mlDsa, mlDsa87, fingerprint } from 'kxco-post-quantum'
 import {
   verifyManifest, verifyUrl, parseManifest, verifySignature,
   computeKid, hexToBytes, bytesToHex, hexEquals,
@@ -45,21 +45,21 @@ const hex = (bytes) => Buffer.from(bytes).toString('hex')
 // A manifest in the shape a publisher serves, signed the way the publishers do
 // it: the signature covers `signedMessage`, built from the kid and two
 // deployment fields.
-function publish(key, { site, commit, env, pinAt = 'kxco-pq-pubkey' }) {
+function publish(key, { site, commit, env, pinAt = 'kxco-pq-pubkey', alg = 'ML-DSA-65', signer = mlDsa }) {
   const kid = fingerprint(key.publicKey)
   const signedMessage = `${kid}.${commit}.${env}`
   return {
     manifest: {
       site,
-      alg: 'ML-DSA-65',
+      alg,
       spec: 'NIST FIPS 204',
       kid,
       deployment: { git_commit: commit, env },
       msgFormat: '{kid}.{deployment.git_commit}.{deployment.env}',
     },
     signedMessage,
-    signature: { alg: 'ML-DSA-65', encoding: 'hex', value: mlDsa.sign(key.secretKey, signedMessage) },
-    publicKey: { alg: 'ML-DSA-65', encoding: 'hex', value: hex(key.publicKey), kid, pinAt },
+    signature: { alg, encoding: 'hex', value: signer.sign(key.secretKey, signedMessage) },
+    publicKey: { alg, encoding: 'hex', value: hex(key.publicKey), kid, pinAt },
   }
 }
 
@@ -163,6 +163,20 @@ test('verifyManifest: a manifest signed with kxco-post-quantum verifies, for any
       r.deployment.git_commit === c &&
       r.deployment.env === e
   }), { numRuns: 20 })
+})
+
+test('verifyManifest: an ML-DSA-87 manifest verifies as ML-DSA-87 for any key and deployment, and never when relabelled ML-DSA-65', async () => {
+  await fc.assert(fc.asyncProperty(master, info, commit, env, async (m, i, c, e) => {
+    const key = mlDsa87.keypairFromMaster(m, i)
+    const body = publish(key, { site: 'example.com', commit: c, env: e, alg: 'ML-DSA-87', signer: mlDsa87 })
+    const relabelled = clone(body)
+    for (const block of [relabelled.manifest, relabelled.signature, relabelled.publicKey]) block.alg = 'ML-DSA-65'
+    const r = await verifyManifest(JSON.stringify(body))
+    const other = await verifyManifest(JSON.stringify(relabelled))
+    return r.state === 'valid' && r.algorithm === 'ML-DSA-87' &&
+      r.manifestKid === fingerprint(key.publicKey) &&
+      other.state === 'error' && other.error.code === 'invalid_field'
+  }), { numRuns: 15 })
 })
 
 test('verifyManifest: any change to what the signature covers makes the manifest invalid', async () => {

@@ -159,7 +159,7 @@ All exports are re-exported from the main entry point (`import ... from 'kxco-ve
 
 ### `verifyUrl(attestationUrl, opts?) → Promise<VerifyResult>`
 
-Fetches the attestation at `attestationUrl`, verifies the ML-DSA-65 signature, then fetches the live well-known pubkey endpoint declared in the manifest (`publicKey.pinAt`) to detect key rotation. May return `"rotated"` if the live endpoint now serves a different key identifier.
+Fetches the attestation at `attestationUrl`, verifies the signature under the parameter set the manifest names (ML-DSA-65 or ML-DSA-87), then fetches the live well-known pubkey endpoint declared in the manifest (`publicKey.pinAt`) to detect key rotation. May return `"rotated"` if the live endpoint now serves a different key identifier.
 
 ```ts
 verifyUrl(
@@ -186,7 +186,7 @@ verifyManifest(manifestBody: string | object): Promise<VerifyResult>
 ```ts
 interface VerifyResult {
   state:           'valid' | 'rotated' | 'invalid' | 'error'
-  algorithm?:      'ML-DSA-65'
+  algorithm?:      'ML-DSA-65' | 'ML-DSA-87'
   manifestKid?:    string                    // key identifier declared in the manifest
   livePubkeyKid?:  string                    // key identifier currently at the well-known endpoint
   site?:           string                    // site identifier declared by the manifest
@@ -212,22 +212,23 @@ These are exported for callers who want to compose their own verification logic.
 
 #### `parseManifest(input) → ParseResult`
 
-Parse and validate a raw manifest body without running signature verification.
+Parse and validate a raw manifest body without running signature verification. `manifest.alg`, `signature.alg` and `publicKey.alg` must name the same parameter set, `ML-DSA-65` or `ML-DSA-87`, and the public key and signature must be exactly that set's sizes (1952 and 3309 bytes for ML-DSA-65, 2592 and 4627 for ML-DSA-87). A key of one set labelled as the other is refused.
 
 ```ts
 parseManifest(input: string | object): ParseResult
 // ParseResult is { ok: true; manifest: ParsedManifest } | { ok: false; error: ParseError }
 ```
 
-#### `verifySignature(publicKey, message, signature) → boolean`
+#### `verifySignature(publicKey, message, signature, alg?) → boolean`
 
-Run ML-DSA-65 signature verification directly.
+Run ML-DSA-65 or ML-DSA-87 signature verification directly. The public key decides the parameter set: 1952 bytes is ML-DSA-65 and 2592 is ML-DSA-87. Pass `alg` to require a set, and a key or signature of the other set returns `false`. An `alg` other than these two throws a `TypeError`.
 
 ```ts
 verifySignature(
   publicKey: Uint8Array | string,   // hex or bytes
   message:   Uint8Array | string,   // UTF-8 string or bytes
   signature: Uint8Array | string,   // hex or bytes
+  alg?:      'ML-DSA-65' | 'ML-DSA-87',
 ): boolean
 ```
 

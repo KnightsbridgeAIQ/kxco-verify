@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+ML-DSA-87 manifests verify alongside ML-DSA-65. parseManifest accepts
+`"ML-DSA-87"` where all three alg fields name it, and requires the public key
+and signature to be exactly that set's sizes: 2592 and 4627 bytes for
+ML-DSA-87, 1952 and 3309 for ML-DSA-65. A manifest whose alg fields disagree,
+or whose key is the size of the other set, is refused with `invalid_field`.
+verifyManifest verifies under the manifest's set and reports it as
+`algorithm`.
+
+verifySignature takes an optional fourth argument, `alg`. Without it the public
+key decides the set by its length; with it, a key or signature of the other set
+returns false, and an algorithm it does not speak throws a TypeError. Every
+ML-DSA-65 manifest and call that verified before verifies unchanged.
+
+The ML-DSA-87 path uses `ml_dsa87` from the same exactly pinned
+`@noble/post-quantum` 0.7.0, so the runtime dependency is unchanged.
+
 ## 1.3.3
 
 A manifest body that is valid JSON but not an object is refused with

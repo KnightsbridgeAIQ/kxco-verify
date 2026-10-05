@@ -5,7 +5,15 @@
 // from the Web Crypto API where available (browser, Node 20+), fallback to
 // node:crypto's createHash where SubtleCrypto.digest is not present.
 
-import { ml_dsa65 } from '@noble/post-quantum/ml-dsa.js'
+import { ml_dsa65, ml_dsa87 } from '@noble/post-quantum/ml-dsa.js'
+
+// The parameter sets this verifier speaks, with their FIPS 204 public-key sizes.
+// The key decides which one a signature is checked under: its length picks
+// the set, and a key that is not exactly a set's size verifies nothing.
+const ML_DSA = {
+  'ML-DSA-65': { primitive: ml_dsa65, publicKey: 1952 },
+  'ML-DSA-87': { primitive: ml_dsa87, publicKey: 2592 },
+}
 
 /**
  * Hex string → Uint8Array. Throws on malformed input.
@@ -68,21 +76,41 @@ export async function computeKid(publicKey) {
   return bytesToHex(hashBytes.subarray(0, 8))
 }
 
+// The ML-DSA parameter set a public key's bytes belong to, by length, or null.
+const algorithmOfKey = (pk) => Object.keys(ML_DSA).find((alg) => ML_DSA[alg].publicKey === pk?.length) ?? null
+
 /**
- * Verify an ML-DSA-65 signature.
- * @param {string|Uint8Array} publicKey   — 1952 bytes (3904 hex chars)
+ * Verify an ML-DSA-65 or ML-DSA-87 signature.
+ *
+ * The public key decides the parameter set: 1952 bytes is ML-DSA-65 and 2592
+ * is ML-DSA-87. Pass `alg` to require a set; a key or signature that is not
+ * that set's size then returns false, so a key of one set is never checked
+ * as the other. An `alg` this verifier does not speak throws, as malformed
+ * hex does, because it is a caller error rather than a failed signature.
+ *
+ * @param {string|Uint8Array} publicKey   — 1952 or 2592 bytes (3904 or 5184 hex chars)
  * @param {string|Uint8Array} message     — string (utf8'd) or raw bytes
- * @param {string|Uint8Array} signature   — 3309 bytes (6618 hex chars)
+ * @param {string|Uint8Array} signature   — 3309 or 4627 bytes (6618 or 9254 hex chars)
+ * @param {'ML-DSA-65'|'ML-DSA-87'} [alg] — the set the caller requires
  * @returns {boolean}
  */
-export function verifySignature(publicKey, message, signature) {
+export function verifySignature(publicKey, message, signature, alg) {
+  if (alg !== undefined && !(typeof alg === 'string' && Object.hasOwn(ML_DSA, alg))) {
+    throw new TypeError(`unsupported algorithm ${JSON.stringify(alg)}: expected "ML-DSA-65" or "ML-DSA-87"`)
+  }
   const pk  = typeof publicKey === 'string' ? hexToBytes(publicKey) : publicKey
   const sig = typeof signature === 'string' ? hexToBytes(signature) : signature
   const msg = typeof message   === 'string' ? utf8(message)         : message
+  const set = ML_DSA[alg ?? algorithmOfKey(pk)]
+  if (!set) return false
+  // Checked here, not left to the primitive: a named set must match the key.
+  if (pk?.length !== set.publicKey) return false
   // @noble/post-quantum ≥0.6 signature order: (signature, message, publicKey).
-  // Matches the canonical wrapper in kxco-post-quantum/src/ml-dsa.js.
+  // Matches the canonical wrapper in kxco-post-quantum/src/ml-dsa.js. The
+  // primitive refuses a key or signature that is not its set's length, so a
+  // key of one set is never checked as the other.
   try {
-    return ml_dsa65.verify(sig, msg, pk)
+    return set.primitive.verify(sig, msg, pk)
   } catch {
     return false
   }

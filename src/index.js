@@ -11,8 +11,9 @@
 //     is trustworthy.
 //   - Maintain a registry of approved (domain, kid) pairs. That is a future
 //     phase of kxco-post-quantum / verify.kxco.ai and not in this library.
-//   - Speak any algorithm other than ML-DSA-65 with hex encoding in this
-//     release. SLH-DSA-128s and hybrid envelopes are deferred.
+//   - Speak any algorithm other than ML-DSA-65 or ML-DSA-87 with hex
+//     encoding in this release. SLH-DSA-128s and hybrid envelopes are
+//     deferred.
 //
 // The result envelope is intentionally three-valued so the UI can distinguish
 // signature failure from in-flight key rotation:
@@ -41,7 +42,7 @@ import { getJsonBody }       from './fetch.js'
  *
  * @typedef {Object} VerifyResult
  * @property {VerifyState} state
- * @property {string=}     algorithm        — e.g. "ML-DSA-65"
+ * @property {string=}     algorithm        — "ML-DSA-65" or "ML-DSA-87"
  * @property {string=}     manifestKid      — kid the manifest declared
  * @property {string=}     livePubkeyKid    — kid currently served at the well-known endpoint (only present when fetched)
  * @property {string=}     site             — site identifier as declared by the manifest
@@ -88,7 +89,10 @@ export async function verifyManifest(manifestBody) {
     }
   }
 
-  const sigValid = verifySignature(m.publicKeyHex, m.signedMessage, m.signatureHex)
+  // The manifest's algorithm, which parseManifest has already bound to the
+  // key and signature sizes, is required here as well, so verification runs
+  // under that parameter set and no other.
+  const sigValid = verifySignature(m.publicKeyHex, m.signedMessage, m.signatureHex, m.alg)
   return {
     state:       sigValid ? 'valid' : 'invalid',
     algorithm:   m.alg,

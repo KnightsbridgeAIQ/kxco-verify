@@ -13,11 +13,18 @@ export function utf8(s: string): Uint8Array
  */
 export function computeKid(publicKey: Uint8Array | string): Promise<string>
 
-/** Verify an ML-DSA-65 signature. */
+/**
+ * Verify an ML-DSA-65 or ML-DSA-87 signature.
+ *
+ * The public key decides the parameter set: 1952 bytes is ML-DSA-65, 2592 is
+ * ML-DSA-87. Pass `alg` to require a set; a key or signature that is not that
+ * set's size returns false. An unsupported `alg` throws a TypeError.
+ */
 export function verifySignature(
   publicKey: Uint8Array | string,
   message:   Uint8Array | string,
   signature: Uint8Array | string,
+  alg?:      'ML-DSA-65' | 'ML-DSA-87',
 ): boolean
 
 /** Length-equal hex comparison. */
