@@ -70,13 +70,14 @@ curl -fsS https://www.target150.com/api/attestation | jq
 Reject:
 - Non-JSON bodies
 - Missing `manifest`, `signature`, or `publicKey` top-level fields
-- Algorithm fields that aren't `"ML-DSA-65"`
+- Algorithm fields that aren't `"ML-DSA-65"` or `"ML-DSA-87"`
+- Algorithm fields that don't all name the same parameter set
 - Encoding fields that aren't `"hex"`
-- Public-key hex that isn't exactly 3904 chars (1952 bytes, the ML-DSA-65 pubkey size)
-- Signature hex that isn't exactly 6618 chars (3309 bytes, the ML-DSA-65 sig size)
+- Public-key hex that isn't exactly that set's size: 3904 chars (1952 bytes) for ML-DSA-65, 5184 chars (2592 bytes) for ML-DSA-87
+- Signature hex that isn't exactly that set's size: 6618 chars (3309 bytes) for ML-DSA-65, 9254 chars (4627 bytes) for ML-DSA-87
 - Non-hex `kid` fields
 
-Byte-count sanity catches malformed payloads before any expensive crypto runs.
+Byte-count sanity catches malformed payloads before any expensive crypto runs, and binds the algorithm to the key: an ML-DSA-65 key labelled ML-DSA-87, or the reverse, is refused here.
 
 ### 3. Recompute the kid from the public key
 
@@ -94,15 +95,16 @@ curl -fsS https://www.target150.com/api/attestation | jq -r .publicKey.value \
 # → 680f9af0bb44de3f
 ```
 
-### 4. Verify the ML-DSA-65 signature
+### 4. Verify the ML-DSA signature
 
 ```js
-ml_dsa65.verify(publicKey, signedMessage, signature)
+ml_dsa65.verify(publicKey, signedMessage, signature)   // manifest.alg "ML-DSA-65"
+ml_dsa87.verify(publicKey, signedMessage, signature)   // manifest.alg "ML-DSA-87"
 ```
 
-The signature must mathematically verify under the manifest-declared public key. This is the cryptographic core. If it fails, returns `state: "invalid"` with code `invalid_signature`. If it succeeds, we move to the rotation check.
+The signature must mathematically verify under the manifest-declared public key, under the parameter set the manifest names and no other. This is the cryptographic core. If it fails, returns `state: "invalid"` with code `invalid_signature`. If it succeeds, we move to the rotation check.
 
-The primitive is `@noble/post-quantum`'s audited TypeScript implementation of ML-DSA-65 (Dilithium3, NIST FIPS 204). For more on what this primitive does and does not prove, see [`threat-model.md`](./threat-model.md).
+The primitive is `@noble/post-quantum`'s audited TypeScript implementation of ML-DSA-65 (Dilithium3) and ML-DSA-87 (Dilithium5), NIST FIPS 204. For more on what this primitive does and does not prove, see [`threat-model.md`](./threat-model.md).
 
 ### 5. Resolve the live pubkey URL
 

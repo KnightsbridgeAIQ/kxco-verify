@@ -1,6 +1,6 @@
 export interface ParsedManifest {
   site: string
-  alg: 'ML-DSA-65'
+  alg: 'ML-DSA-65' | 'ML-DSA-87'
   kid: string
   signedMessage: string
   signatureHex: string
