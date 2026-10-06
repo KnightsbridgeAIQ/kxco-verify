@@ -1,11 +1,12 @@
 {
   "name": "kxco-verify",
-  "version": "1.4.0",
-  "description": "Free, browser-safe verifier for KXCO ML-DSA-65 post-quantum signatures, with no KXCO server in the trust path. An auditor, regulator or counterparty confirms a signature from the artefact alone, years later, and can check the key is still live against the on-chain registry.",
+  "version": "1.4.1",
+  "description": "Free, browser-safe verifier for KXCO ML-DSA-87 and ML-DSA-65 signatures, with no KXCO server in the trust path. An auditor, regulator or counterparty confirms a signature from the artefact alone, years later, and can check the key is still live on chain.",
   "keywords": [
     "post-quantum",
     "pqc",
     "ml-dsa",
+    "ml-dsa-87",
     "dilithium",
     "nist",
     "fips-204",
