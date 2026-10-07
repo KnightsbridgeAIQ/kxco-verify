@@ -11,7 +11,7 @@
 [![node](https://img.shields.io/node/v/kxco-verify.svg)](https://nodejs.org)
 [![verify.kxco.ai](https://img.shields.io/badge/verify.kxco.ai-live-22c55e)](https://verify.kxco.ai)
 
-Standalone post-quantum credential and attestation verifier for KXCO ML-DSA-65 signed documents. One dependency, pinned exactly. Works in any modern browser and in Node.js 20.19 and later.
+Standalone post-quantum credential and attestation verifier for KXCO ML-DSA-87 and ML-DSA-65 signed documents. One dependency, pinned exactly. Works in any modern browser and in Node.js 20.19 and later.
 
 - **No KXCO server in the trust path.** `verifyManifest()` makes no network request at all, and `verifyUrl()` contacts only the attestation URL you pass and the key endpoint the manifest names.
 - **Runs in the browser as shipped.** No `Buffer`, no `process` and SHA-256 from WebCrypto, which is how [verify.kxco.ai](https://verify.kxco.ai) checks a signature entirely in the tab.
@@ -322,7 +322,7 @@ version, and every GitHub Action is pinned by commit SHA.
 
 ## Security
 
-**ML-DSA-65** (NIST FIPS 204) via [`@noble/post-quantum`](https://github.com/paulmillr/noble-post-quantum) 0.7.0, pinned exactly. No custom cryptography.
+**ML-DSA-87** and **ML-DSA-65** (NIST FIPS 204) via [`@noble/post-quantum`](https://github.com/paulmillr/noble-post-quantum) 0.7.0, pinned exactly. No custom cryptography.
 
 Evidenced, and reproducible on your own machine:
 

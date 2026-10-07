@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.1
+
+Documentation. No source change.
+
+The package description, the opening of the README and the keywords now say
+what 1.4.0 already does: it verifies ML-DSA-87 signatures as well as ML-DSA-65.
+The description now fits the 255 characters the npm registry keeps, so it no
+longer ends mid-sentence. `ml-dsa-87` joins the keywords.
+
 ## 1.4.0
 ML-DSA-87 manifests verify alongside ML-DSA-65. parseManifest accepts
 `"ML-DSA-87"` where all three alg fields name it, and requires the public key
