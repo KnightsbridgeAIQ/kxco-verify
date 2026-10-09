@@ -11,7 +11,7 @@
 [![node](https://img.shields.io/node/v/kxco-verify.svg)](https://nodejs.org)
 [![verify.kxco.ai](https://img.shields.io/badge/verify.kxco.ai-live-22c55e)](https://verify.kxco.ai)
 
-Standalone post-quantum credential and attestation verifier for KXCO ML-DSA-87 and ML-DSA-65 signed documents. One dependency, pinned exactly. Works in any modern browser and in Node.js 20.19 and later.
+Standalone post-quantum credential and attestation verifier for KXCO ML-DSA-87 and ML-DSA-65 signed documents. One dependency, pinned exactly. Works in any modern browser and in Node.js 22.12 and later.
 
 - **No KXCO server in the trust path.** `verifyManifest()` makes no network request at all, and `verifyUrl()` contacts only the attestation URL you pass and the key endpoint the manifest names.
 - **Runs in the browser as shipped.** No `Buffer`, no `process` and SHA-256 from WebCrypto, which is how [verify.kxco.ai](https://verify.kxco.ai) checks a signature entirely in the tab.
@@ -49,7 +49,7 @@ To **sign** attestations, pick the signing package from [the KXCO post-quantum f
 npm install kxco-verify
 ```
 
-Node.js 20.19 and later. ESM only. One dependency, and no KXCO server in the trust path.
+Node.js 22.12 and later. ESM only. One dependency, and no KXCO server in the trust path.
 
 ## Command line
 
@@ -258,7 +258,7 @@ hexEquals(a: string, b: string): boolean
 
 ## Browser usage
 
-The library is browser-safe by construction. It uses no `Buffer` and no `process`, and takes SHA-256 from `crypto.subtle`, which every modern browser and Node.js 20.19 and later provide.
+The library is browser-safe by construction. It uses no `Buffer` and no `process`, and takes SHA-256 from `crypto.subtle`, which every modern browser and Node.js 22.12 and later provide.
 
 Use a bundler (Vite, esbuild, Rollup, webpack), or load as ESM via an import map that points each package at its folder:
 

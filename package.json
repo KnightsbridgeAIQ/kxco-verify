@@ -1,6 +1,6 @@
 {
   "name": "kxco-verify",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "Free, browser-safe verifier for KXCO ML-DSA-87 and ML-DSA-65 signatures, with no KXCO server in the trust path. An auditor, regulator or counterparty confirms a signature from the artefact alone, years later, and can check the key is still live on chain.",
   "keywords": [
     "post-quantum",
@@ -78,7 +78,7 @@
     "src"
   ],
   "engines": {
-    "node": ">=20.19"
+    "node": ">=22.12"
   },
   "dependencies": {
     "@noble/post-quantum": "0.7.0"
