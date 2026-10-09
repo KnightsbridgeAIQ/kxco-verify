@@ -24,7 +24,7 @@ import {
   computeKid, hexToBytes, bytesToHex, hexEquals,
 } from '../src/index.js'
 
-// Node 18, which this repository's CI still runs, has no global Web Crypto
+// Node 18 has no global Web Crypto
 // unless asked for one, and the signer draws its hedging randomness from it.
 // With this in place the verifier takes SHA-256 from Web Crypto here, as it
 // does on every runtime from Node 20 on; its fallback is left to the example

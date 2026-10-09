@@ -16,7 +16,7 @@ import { mlDsa, mlDsa87, fingerprint } from 'kxco-post-quantum'
 
 import { parseManifest, verifyManifest, verifySignature } from '../src/index.js'
 
-// Node 18, which this repository's CI still runs, has no global Web Crypto
+// Node 18 has no global Web Crypto
 // unless asked for one, and the signer draws its randomness from it.
 if (!globalThis.crypto) globalThis.crypto = (await import('node:crypto')).webcrypto
 
