@@ -106,6 +106,6 @@
   },
   "devDependencies": {
     "fast-check": "4.10.2",
-    "kxco-post-quantum": "1.10.0"
+    "kxco-post-quantum": "1.11.0"
   }
 }
