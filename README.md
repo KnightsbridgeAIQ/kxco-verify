@@ -19,7 +19,7 @@ Standalone post-quantum credential and attestation verifier for KXCO ML-DSA-87 a
 - **Live revocation on request.** `--live` asks the KXCO key registry whether the signing kid is still active, and fails closed.
 - **Made for CI.** `npx kxco-verify <url>` exits 0 for valid, 1 for invalid or revoked, 2 when it cannot fetch or parse and 3 for rotated, with `--json` for machines.
 - **Independent of the signer.** It calls the primitive directly and shares none of the KXCO signing code, so it can be audited on its own.
-- **The primitive NIST's vectors pass.** Verification runs `@noble/post-quantum` 0.7.0, pinned exactly: the version [`kxco-post-quantum`](https://github.com/KnightsbridgeAIQ/kxco-post-quantum/blob/main/CONFORMANCE.md) holds to 1,793 NIST ACVP vectors passed, 0 failed, and 225 interoperability checks against liboqs, Bouncy Castle and the Python reference implementations, 0 failed.
+- **The primitive NIST's vectors pass.** Verification runs `@noble/post-quantum` 0.7.1, pinned exactly: the version [`kxco-post-quantum`](https://github.com/KnightsbridgeAIQ/kxco-post-quantum/blob/main/CONFORMANCE.md) holds to 1,793 NIST ACVP vectors passed, 0 failed, and 225 interoperability checks against liboqs, Bouncy Castle and the Python reference implementations, 0 failed.
 
 **The migration has dates.**
 
@@ -322,11 +322,11 @@ version, and every GitHub Action is pinned by commit SHA.
 
 ## Security
 
-**ML-DSA-87** and **ML-DSA-65** (NIST FIPS 204) via [`@noble/post-quantum`](https://github.com/paulmillr/noble-post-quantum) 0.7.0, pinned exactly. No custom cryptography.
+**ML-DSA-87** and **ML-DSA-65** (NIST FIPS 204) via [`@noble/post-quantum`](https://github.com/paulmillr/noble-post-quantum) 0.7.1, pinned exactly. No custom cryptography.
 
 Evidenced, and reproducible on your own machine:
 
-- **1,793 NIST ACVP vectors passed, 0 failed** across FIPS 203, 204 and 205 on `@noble/post-quantum` 0.7.0, pinned by digest, per [CONFORMANCE.md](https://github.com/KnightsbridgeAIQ/kxco-post-quantum/blob/main/CONFORMANCE.md). The other 310 are pairings the library refuses as weaker than the parameter set
+- **1,793 NIST ACVP vectors passed, 0 failed** across FIPS 203, 204 and 205 on `@noble/post-quantum` 0.7.1, pinned by digest, per [CONFORMANCE.md](https://github.com/KnightsbridgeAIQ/kxco-post-quantum/blob/main/CONFORMANCE.md). The other 310 are pairings the library refuses as weaker than the parameter set
 - **225 interoperability checks passed, 0 failed**, against OpenSSL 3.5, liboqs, Bouncy Castle and dilithium-py/kyber-py, in both directions
 - **SLSA provenance** on every release since 1.2.1: verify with `npm audit signatures`
 - **CycloneDX SBOM** published with every release since 1.2.1

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.1 (2026-10-16)
+
+**`@noble/post-quantum` 0.7.0 to 0.7.1, exact pin.** No change to the API or its behaviour.
+
+The hold at 0.7.0 rested on a finding that 0.7.1 failed nine NIST SLH-DSA verification vectors. That finding was a fault in kxco-post-quantum's ACVP runner, corrected there on 15 October 2026, not in 0.7.1. On the corrected runner the full NIST ACVP set on 0.7.1 returns 1793 passed, 0 failed, 310 skipped, the same totals as 0.7.0. 0.7.1 snapshots its options object and rejects options it does not recognise; this package passes none, so nothing on its verification path changes.
+
 ## 1.5.0 (2026-10-09)
 
 Runtime support. No change to the API or its behaviour.
