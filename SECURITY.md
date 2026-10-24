@@ -15,7 +15,7 @@ Only the latest minor on the latest major is supported with security fixes durin
 
 Email `john@knightsbridgelaw.com` with subject line: `[kxco-verify] SECURITY: <one-line summary>`
 
-If you need PGP, also fetch the platform's ML-DSA-65 public key from
+If you need PGP, also fetch the platform's ML-DSA-87 public key from
 `https://chain.kxco.ai/wallet/api/.well-known/kxco-pq-pubkey` and sign your
 report with your own key — we'll respond in kind.
 
