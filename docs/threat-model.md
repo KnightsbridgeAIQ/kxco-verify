@@ -10,8 +10,8 @@ A `"valid"` result establishes all of these:
 
 | Property                                                                                            | How it's proven                                              |
 |-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| The signature is over the exact `signedMessage` field that was in the manifest body you fetched     | ML-DSA-65 verify                                             |
-| The signature was produced by the private key whose public counterpart is in the same manifest body | ML-DSA-65 verify                                             |
+| The signature is over the exact `signedMessage` field that was in the manifest body you fetched     | ML-DSA-87 or ML-DSA-65 verify                                |
+| The signature was produced by the private key whose public counterpart is in the same manifest body | ML-DSA-87 or ML-DSA-65 verify                                |
 | The kid in the manifest is the actual SHA-256 fingerprint of the embedded public key                | Recomputed before signature verification                     |
 | The same public key is currently being served at the publisher's `pinAt` well-known endpoint        | Second fetch, kid recompute                                  |
 | The manifest body has not been altered in flight between fetch and verification in your process     | Implied by the signature math                                |
