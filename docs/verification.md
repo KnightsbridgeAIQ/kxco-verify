@@ -11,7 +11,7 @@ Any site using [`kxco-post-quantum`](https://www.npmjs.com/package/kxco-post-qua
 | Endpoint                       | Purpose                                                    |
 |--------------------------------|------------------------------------------------------------|
 | `/api/attestation` (or similar) | The signed attestation manifest itself                     |
-| `/.well-known/<id>-pq-pubkey`   | The live ML-DSA-65 public key for the site                 |
+| `/.well-known/<id>-pq-pubkey`   | The site's live ML-DSA-87 or ML-DSA-65 public key          |
 
 The attestation body has this shape:
 
